@@ -16,7 +16,6 @@
  */
 package pm.app;
 
-import java.util.Locale;
 import java.util.Scanner;
 
 import pm.data.*;
@@ -53,8 +52,54 @@ public class Shop {
 
             switch (option) {
                 case "1":
-
-                    pm.getProducts().stream().map(s -> pm.showProduct(s)).forEach(System.out::println);
+                    String lang = "";
+                    boolean flag = true;
+                    do {
+                        System.out.println("Select the language in which to view the products\n"
+                                + "1.- English (United Kingdom).\n"
+                                + "2.- English (EEUU).\n"
+                                + "3.- French.\n"
+                                + "4.- German.\n"
+                                + "5.- Spanish.\n"
+                                + "0.- Exit.\n");
+                        String optionCase1 = sc.next();
+                        switch (optionCase1) {
+                            case "1":
+                                lang = "en_GB";
+                                flag = false;
+                                break;
+                                        
+                            case "2":
+                                lang = "en_US";
+                                flag = false;
+                                break;
+                                
+                            case "3":
+                                lang = "fr_FR";
+                                flag = false;
+                                break;
+                                
+                            case "4":
+                                lang = "de_GE";
+                                flag = false;
+                                break;
+                                
+                            case "5":
+                                lang = "es_ES";
+                                flag = false;
+                                break;
+                                
+                            case "0":
+                                flag = false;
+                                break;
+                                
+                            default:
+                                System.out.println("Please enter a valid option.");
+                        }
+                    } while (flag);
+                    
+                        final String lang2 = lang;
+                        pm.getProducts().stream().map(p -> pm.showProduct(p, lang2)).forEach(System.out::println);
                     break;
 
                 case "2":
@@ -81,18 +126,20 @@ public class Shop {
                                 try {
                                     System.out.println(System.lineSeparator() + pm.findProduct(name));
                                 } catch (ProductManagerException e) {
-                                    System.out.println(e.getMessage());}
-                                    pass = false;
-                                    break; 
-
-                            default:
-                                System.out.println("Please enter a valid option ");
+                                    System.out.println(e.getMessage());
+                                }
+                                pass = false;
                                 break;
 
-                    }} while (pass);
-                        break;
+                            default:
+                                System.out.println("Please enter a valid option.");
+                                break;
 
-                      case "3":
+                        }
+                    } while (pass);
+                    break;
+
+                case "3":
                     System.out.println("Enter the id of the product you want to see reviews of:\t");
                     id = sc.nextInt();
                     for (Review r : pm.loadReviews(id)) {
@@ -173,8 +220,7 @@ public class Shop {
                     System.out.println("Introduce a valid number");
                     break;
             }
-        
-            
-            }
+
         }
     }
+}

@@ -51,7 +51,7 @@ public class ProductManager {
 
     private static final Map<String, ResourceFormatter> formatters = Map.of("en_GB", new ResourceFormatter(Locale.UK),
             "en_US", new ResourceFormatter(Locale.US), "fr_FR", new ResourceFormatter(Locale.FRANCE), "es_ES", new ResourceFormatter(new Locale("es", "ES")),
-            "de_GE", new ResourceFormatter(Locale.GERMAN));
+            "de_GE", new ResourceFormatter(Locale.GERMANY));
 
     private static final ProductManager pm = new ProductManager();
 
@@ -118,6 +118,10 @@ public class ProductManager {
     public String showProduct(Product product) {
 
         return formatter.formatProductLoad(product);
+    }
+    public String showProduct(Product product, String lang) {
+
+        return formatters.getOrDefault(lang, formatter).formatProductLoad(product);
     }
 
     public static Set<String> getSupportedLocales() {
