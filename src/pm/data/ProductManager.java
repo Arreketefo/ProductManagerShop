@@ -49,9 +49,9 @@ public class ProductManager {
     private final MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
     private final MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
 
-    private static final Map<String, ResourceFormatter> formatters = Map.of("en-GB", new ResourceFormatter(Locale.UK),
-            "en-US", new ResourceFormatter(Locale.US), "fr-FR", new ResourceFormatter(Locale.FRANCE), "es-ES", new ResourceFormatter(new Locale("es", "ES")),
-            "de-GE", new ResourceFormatter(Locale.GERMAN));
+    private static final Map<String, ResourceFormatter> formatters = Map.of("en_GB", new ResourceFormatter(Locale.UK),
+            "en_US", new ResourceFormatter(Locale.US), "fr_FR", new ResourceFormatter(Locale.FRANCE), "es_ES", new ResourceFormatter(new Locale("es", "ES")),
+            "de_GE", new ResourceFormatter(Locale.GERMAN));
 
     private static final ProductManager pm = new ProductManager();
 
