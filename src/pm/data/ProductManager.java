@@ -128,7 +128,7 @@ public class ProductManager {
         return formatters.keySet();
     }
 
-    public Product createProduct(String type, String name, BigDecimal price, Rating rating,
+    public Product createProductFood(String type, String name, BigDecimal price, Rating rating,
             LocalDate bestBefore) {
         Product product = null;
         try {
@@ -144,7 +144,7 @@ public class ProductManager {
         return product;
     }
 
-    public Product createProduct(String type, String name, BigDecimal price, Rating rating) {
+    public Product createProductDrink(String type, String name, BigDecimal price, Rating rating) {
         Product product = null;
         try {
             writeLock.lock();
@@ -325,17 +325,7 @@ public class ProductManager {
     }
 
     public Set<Review> loadReviews(int id) {
-        Set<Review> re = new TreeSet<>();
-        try {
-            re = loadReviews(findProduct(id));
-        } catch (ProductManagerException e) {
-            logger.log(Level.INFO, e.getMessage());
-        }
-        return re;
-    }
-
-    public Set<Review> loadReviews(Product product) {
-        return products.stream().filter(p -> p.getId() == product.getId()).map(Product::getReviews)
+        return products.stream().filter(p -> p.getId() == id).map(Product::getReviews)
                 .flatMap(s -> s.stream()).collect(Collectors.toSet());
 
     }
@@ -380,16 +370,15 @@ public class ProductManager {
         try {
             values = productFormat.parse(text);
             if (values != null) {
-//            int id = Integer.parseInt((String) values[0]);
                 String name = (String) values[0];
                 String type = values[1].toString();
                 BigDecimal price = BigDecimal.valueOf(Double.parseDouble((String) values[2]));
                 Rating rating = Rateable.convertString((String) values[3]);
                 if (type.equals("Drink")) {
-                    product = new Drink(type, name, price, rating);
+                    product = createProductDrink(type, name, price, rating);
                 } else if (type.equals("Food")) {
                     LocalDate bestBefore = LocalDate.parse((String) values[4]);
-                    product = new Food(type, name, price, rating, bestBefore);
+                    product = createProductFood(type, name, price, rating, bestBefore);
                 }
             }
             products.add(product);
