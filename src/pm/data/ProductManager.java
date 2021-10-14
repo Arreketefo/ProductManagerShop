@@ -295,7 +295,6 @@ public class ProductManager {
 
             String[] newProduct = data.findFirst().orElseThrow().split(",");
 
-//            Integer id = Integer.valueOf(file.getFileName().toString().substring(7, 10));
             String name = newProduct[0].substring(6);
             String type = newProduct[1].substring(7);
 
