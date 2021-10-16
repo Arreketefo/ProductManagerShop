@@ -16,10 +16,18 @@
  */
 package pm.data;
 
-import java.math.BigDecimal;
 import static java.math.RoundingMode.HALF_UP;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  *
@@ -29,7 +37,7 @@ public abstract class Product implements Rateable<Product>, Comparable<Product> 
 
 
     public static final BigDecimal DISCOUNT_RATE = BigDecimal.valueOf(0.1);
-    private static int id = 100;
+    private static int id = loadId();
     private String type;
     private String name;
     private BigDecimal price;
@@ -87,16 +95,28 @@ public abstract class Product implements Rateable<Product>, Comparable<Product> 
         return review;
     }
 
-    static void autoIncrement(){
+    private static void autoIncrement(){
         id++;
+    }
+
+    private static int loadId(){
+        int idMax = 0;
+
+        try (Stream<Path> products= Files.list(Path.of(ResourceBundle.getBundle("pm.data.config").getString("data.folder")))){
+            
+            idMax = products.mapToInt(s -> Integer.valueOf(s.getFileName().toString().substring(7, 10))).max().orElse(0);
+
+        } catch (IOException e) {
+            System.out.println("Problem with the id's load");
+        }
+        return idMax;
+
     }
     @Override
     public Rating getRating() {
         return rating;
     }
 
-    // Ya esta definida en la Interface Rateable y esta clase Product es abstracta
-    // asi que no esta obligado a definirla
 
     @Override
     public String toString() {
