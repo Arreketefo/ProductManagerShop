@@ -26,6 +26,7 @@ import java.util.Set;
  */
 public final class Drink extends Product {
 
+
     Drink(String type, String name, BigDecimal price, Rating rating) {
         super(type,  name, price, rating);
     }

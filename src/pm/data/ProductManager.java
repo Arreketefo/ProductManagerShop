@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  */
 public class ProductManager {
 
-    private static Set<Product> products = new TreeSet<>();
+    public static Set<Product> products = new TreeSet<>();
     private ResourceFormatter formatter = new ResourceFormatter(Locale.UK);
     private final ResourceBundle config = ResourceBundle.getBundle("pm.data.config");
     private final MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
@@ -57,7 +57,7 @@ public class ProductManager {
 
     private static final Logger logger = Logger.getLogger(ProductManager.class.getName());
 
-    private final Path dataFolder = Path.of(config.getString("data.folder"));
+    public final Path dataFolder = Path.of(config.getString("data.folder"));
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock writeLock = lock.writeLock();
     private final Lock readLock = lock.readLock();
@@ -103,6 +103,10 @@ public class ProductManager {
         private String getText(String key) {
             return resourcesLoad.getString(key);
         }
+
+    }
+
+    private ProductManager(){
 
     }
 
@@ -289,9 +293,8 @@ public class ProductManager {
     public Product loadProductCsv(Path file) {
 
         Product product = null;
-        Path path = dataFolder.resolve(file);
 
-        try (Stream<String> data = Files.lines(path)) {
+        try (Stream<String> data = Files.lines(file)) {
 
             String[] newProduct = data.findFirst().orElseThrow().split(",");
 
@@ -300,7 +303,7 @@ public class ProductManager {
 
             BigDecimal price = BigDecimal.valueOf(Double.parseDouble(newProduct[2].substring(9)));
             Rating rating = Rateable.convertString(newProduct[3].substring(9));
-            Set<Review> reviewsLoad = Files.readAllLines(path).stream().skip(1).filter(s -> !s.equals("Not reviewed")).map((String r) -> {
+            Set<Review> reviewsLoad = Files.readAllLines(file).stream().skip(1).filter(s -> !s.equals("Not reviewed")).map((String r) -> {
                 String[] a = r.split("\t");
                 if (a.length == 2) {
                     return new Review(Rateable.convertString(a[0].substring(8)), a[1]);
@@ -320,6 +323,7 @@ public class ProductManager {
         } catch (IOException ex) {
             logger.log(Level.WARNING, "Error loadind product", ex);
         }
+
         return product;
     }
 

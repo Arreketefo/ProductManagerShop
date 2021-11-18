@@ -26,7 +26,6 @@ import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
@@ -37,7 +36,8 @@ public abstract class Product implements Rateable<Product>, Comparable<Product> 
 
 
     public static final BigDecimal DISCOUNT_RATE = BigDecimal.valueOf(0.1);
-    private static int id = loadId();
+    private static int contador = loadCurrentId();
+    private int id;;
     private String type;
     private String name;
     private BigDecimal price;
@@ -49,7 +49,8 @@ public abstract class Product implements Rateable<Product>, Comparable<Product> 
     }
 
     Product(String type, String name, BigDecimal price, Rating rating) {
-        autoIncrement();
+        contador++;
+        this.id = contador;
         this.type = type;
         this.name = name;
         this.price = price;
@@ -95,21 +96,19 @@ public abstract class Product implements Rateable<Product>, Comparable<Product> 
         return review;
     }
 
-    private static void autoIncrement(){
-        id++;
-    }
 
-    private static int loadId(){
+    private static int loadCurrentId(){
         int idMax = 0;
+        int numberProducts = 5;
 
         try (Stream<Path> products= Files.list(Path.of(ResourceBundle.getBundle("pm.data.config").getString("data.folder")))){
             
-            idMax = products.mapToInt(s -> Integer.valueOf(s.getFileName().toString().substring(7, 10))).max().orElse(0);
+            idMax = products.mapToInt(s -> Integer.valueOf(s.getFileName().toString().substring(7, 10))).max().orElse(100);
 
         } catch (IOException e) {
             System.out.println("Problem with the id's load");
         }
-        return idMax;
+        return idMax - numberProducts;
 
     }
     @Override

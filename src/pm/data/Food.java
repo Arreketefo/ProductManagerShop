@@ -31,6 +31,7 @@ public final class Food extends Product{
     Food(String type, String name, BigDecimal price, Rating rating, LocalDate bestBefore){
         super(type, name, price, rating);
         this.bestBefore = bestBefore;
+
     }
     Food(String type, String name, BigDecimal price, Rating rating, LocalDate bestBefore, Set<Review> reviews){
         super(type, name, price, rating, reviews);
