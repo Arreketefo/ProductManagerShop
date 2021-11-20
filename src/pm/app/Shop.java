@@ -89,7 +89,7 @@ public class Shop {
                 } while (flag);
 
                 final String lang2 = lang;
-                pm.getProducts().stream().map(p -> pm.showProduct(p, lang2)).forEach(System.out::println);
+                pm.getProducts().stream().peek(s -> System.out.println(s.getReviews())).map(p -> pm.showProduct(p, lang2)).forEach(System.out::println);
                 break;
 
             case "2":
@@ -159,14 +159,16 @@ public class Shop {
                 StringBuilder productReview = new StringBuilder();
                 System.out.println("Introduce your new review:\n" + "Id:\t");
                 id = sc.nextInt();
+
                 System.out.println("\nStars: (A number between 0 and 5)");
-                productReview.append(",");
                 productReview.append(sc.next());
+                productReview.append(",");
+
                 System.out.println("\nComments: ");
-                productReview.append(",");
                 productReview.append(sc.next());
-                System.out.println(productReview.toString());
-                pm.parseReview(productReview.toString());
+
+                System.out.println("\n" + productReview);
+                pm.printReview(id, pm.parseReview(productReview.toString()));
                 pm.printProductReport(id);
                 break;
 
@@ -206,6 +208,6 @@ public class Shop {
 
 
         }
-        // sc.close();
+        sc.close();
     }
 }
