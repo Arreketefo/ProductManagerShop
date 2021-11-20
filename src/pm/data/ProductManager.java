@@ -37,30 +37,34 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.swing.event.SwingPropertyChangeSupport;
+
 /**
  *
  * @author Oscar Aguilar
  */
 public class ProductManager {
 
-    public static Set<Product> products = new TreeSet<>();
-    private ResourceFormatter formatter = new ResourceFormatter(Locale.UK);
-    private final ResourceBundle config = ResourceBundle.getBundle("pm.data.config");
-    private final MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
-    private final MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
-
-    private static final Map<String, ResourceFormatter> formatters = Map.of("en_GB", new ResourceFormatter(Locale.UK),
-            "en_US", new ResourceFormatter(Locale.US), "fr_FR", new ResourceFormatter(Locale.FRANCE), "es_ES", new ResourceFormatter(new Locale("es", "ES")),
-            "de_GE", new ResourceFormatter(Locale.GERMANY));
+    private static Set<Product> products = new TreeSet<>();
 
     private static final ProductManager pm = new ProductManager();
 
     private static final Logger logger = Logger.getLogger(ProductManager.class.getName());
 
-    public final Path dataFolder = Path.of(config.getString("data.folder"));
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock writeLock = lock.writeLock();
     private final Lock readLock = lock.readLock();
+
+
+    private ResourceFormatter formatter = new ResourceFormatter(Locale.UK);
+    private final ResourceBundle config = ResourceBundle.getBundle("pm.data.config");
+    private final MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
+    private final MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
+    private static final Map<String, ResourceFormatter> formatters = Map.of("en_GB", new ResourceFormatter(Locale.UK),
+            "en_US", new ResourceFormatter(Locale.US), "fr_FR", new ResourceFormatter(Locale.FRANCE), "es_ES", new ResourceFormatter(new Locale("es", "ES")),
+            "de_GE", new ResourceFormatter(Locale.GERMANY));
+
+    private final Path dataFolder = Path.of(config.getString("data.folder"));
 
     private static class ResourceFormatter {
 
@@ -232,19 +236,25 @@ public class ProductManager {
         Path productFile = dataFolder
                 .resolve(MessageFormat.format(config.getString("product.data.file"), product.getId()));
 
+            
         try (BufferedWriter out = Files.newBufferedWriter(productFile, StandardOpenOption.CREATE);
                 Stream<String> data = Files.lines(productFile)) {
 
-            if (data.noneMatch(s -> s.equals(form))) {
-                out.append((form) + System.lineSeparator());
-                if (reviews.isEmpty()) {
-                    out.append(formatter.getText("no.review") + System.lineSeparator());
-                } else {
-                    out.append(reviews.stream().map(r -> formatter.formatReviewPrint(r) + System.lineSeparator())
-                            .collect(Collectors.joining()));
-                }
-                out.flush();
-            }
+                    StringBuilder sb = new StringBuilder();
+
+                        sb.append((form) + System.lineSeparator());
+
+                        if (reviews.isEmpty()) {
+                            sb.append(formatter.getText("no.review") + System.lineSeparator());
+
+                        } else {
+                            sb.append(reviews.stream().map(r -> formatter.formatReviewPrint(r) + System.lineSeparator())
+                                    .collect(Collectors.joining()));
+
+                        }
+                        System.out.println(sb.toString());
+                        out.write(sb.toString());
+                        out.flush();
 
         }
 
@@ -262,9 +272,17 @@ public class ProductManager {
     public void printReview(int id, Review review) {
         try {
             Product product = findProduct(id);
-            products.removeIf(s -> s.getId() == id);
-            product.setReview(review);
-            products.add(product);
+            Set<Review> reviews = product.getReviews();
+            
+            reviews.removeIf(s -> formatter.getText("no.review").equals(s.getComments()));
+            
+
+            if (!reviews.contains(review)){
+                product.setReview(review);
+                products.remove(product);
+                products.add(product);
+            }
+
         } catch (ProductManagerException ex) {
             logger.log(Level.INFO, "The product for which you want to find the review is not found {0}", ex.getMessage());
         }
@@ -282,7 +300,7 @@ public class ProductManager {
         }
         try (Stream<Path> data = Files.list(pm.dataFolder)) {
 
-            products = data.map(pm::loadProductCsv).filter(s -> s != null)
+            products = data.map(pm::loadProductCsv).filter(Objects::nonNull)
                     .collect(Collectors.toSet());
         } catch (IOException ex) {
             logger.log(Level.WARNING, "Error loading all data {0}", ex.getMessage());
@@ -303,9 +321,10 @@ public class ProductManager {
 
             BigDecimal price = BigDecimal.valueOf(Double.parseDouble(newProduct[2].substring(9)));
             Rating rating = Rateable.convertString(newProduct[3].substring(9));
-            Set<Review> reviewsLoad = Files.readAllLines(file).stream().skip(1).filter(s -> !s.equals("Not reviewed")).map((String r) -> {
+            Set<Review> reviewsLoad = Files.readAllLines(file).stream().skip(1).map((String r) -> {
                 String[] a = r.split("\t");
                 if (a.length == 2) {
+      
                     return new Review(Rateable.convertString(a[0].substring(8)), a[1]);
                 } else {
                     return new Review(Rateable.DEFAULT_RATING, formatter.getText("no.review"));
@@ -360,7 +379,7 @@ public class ProductManager {
         Review review = null;
         try {
             Object[] values = reviewFormat.parse(text);
-            review = new Review(Rateable.convertString((String) values[0]), (String) values[1]);
+            review = new Review(Rateable.convertInt(Integer.parseInt((String)values[0])), (String) values[1]);
         } catch (ParseException | NumberFormatException ex) {
             logger.log(Level.WARNING, "Error parsing review {0}", text);
         }
